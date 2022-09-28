@@ -15,8 +15,17 @@ public class StockService {
     }
 
     @Transactional
-    public synchronized void decrease(Long id, Long quantity) {
+    public synchronized void decrease_sync(Long id, Long quantity) {
         Stock stock = stockRepository.findById(id).orElseThrow();
+
+        stock.decrease(quantity);
+
+        stockRepository.save(stock);
+    }
+
+    @Transactional
+    public void decrease_pessimisticLock(Long id, Long quantity) {
+        Stock stock = stockRepository.findByIdWithPessimisticLock(id).orElseThrow();
 
         stock.decrease(quantity);
 

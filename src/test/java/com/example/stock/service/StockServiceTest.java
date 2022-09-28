@@ -38,7 +38,7 @@ class StockServiceTest {
     void stock_decrease_test_verify_stock_99_when_decrease_1() {
 
         // when
-        stockService.decrease(1L, 1L);
+        stockService.decrease_sync(1L, 1L);
 
         Stock stock = stockRepository.findById(1L).orElseThrow();
 
@@ -47,7 +47,7 @@ class StockServiceTest {
     }
 
     @Test
-    void stock_decrease_when_multi_thread() throws InterruptedException {
+    void stock_decrease_sync_when_multi_thread() throws InterruptedException {
         // given
         int threadCount = 100;
         ExecutorService executorService = Executors.newFixedThreadPool(32);
@@ -57,7 +57,33 @@ class StockServiceTest {
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(()->{
                 try {
-                    stockService.decrease(1L, 1L);
+                    stockService.decrease_sync(1L, 1L);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+
+        // then
+        Stock stock = stockRepository.findById(1L).orElseThrow();
+
+        assertThat(stock.getQuantity()).isEqualTo(0);
+    }
+
+    @Test
+    void stock_decrease_pessimistic_lock_when_multi_thread() throws InterruptedException {
+        // given
+        int threadCount = 100;
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        // when
+        for (int i = 0; i < threadCount; i++) {
+            executorService.submit(()->{
+                try {
+                    stockService.decrease_pessimisticLock(1L, 1L);
                 } finally {
                     latch.countDown();
                 }

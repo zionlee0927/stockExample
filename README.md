@@ -42,5 +42,15 @@ Race Condition이 발생하게 됨
 | 10:01 | update      | 4     | -           |
 | -     | -           | 4     | update      |
 
+#### 2. DB에 Lock을 걸어 데이터 엑세스를 순차적으로 하나씩 가능하게 한다.
+
+1. Pessimistic Lock
+   - 다른 트랜잭이 특정 row의 lock을 얻는 것을 방지합니다.
+     - A 트랜잭션이 끝날때까지 기다렸다가 B 트랜잭션이 lock을 획득
+   - 특정 row 를 update 하거나 delete 할 수 없습니다
+   - 일반 select 는 별다른 lock이 없기 때문에 조회는 가능합니다.
+2. Optimistic Lock
+3. Named Lock
+
 
 
