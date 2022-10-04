@@ -31,4 +31,13 @@ public class StockService {
 
         stockRepository.save(stock);
     }
+
+    @Transactional
+    public void decreaseByOptimisticLock(Long id, Long quantity) {
+        Stock stock = stockRepository.findByIdWithOptimisticLock(id).orElseThrow();
+
+        stock.decrease(quantity);
+
+        stockRepository.save(stock);
+    }
 }

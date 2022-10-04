@@ -22,6 +22,9 @@ class StockServiceTest {
     private StockService stockService;
 
     @Autowired
+    private StockServiceFacade stockServiceFacade;
+
+    @Autowired
     private StockRepository stockRepository;
 
     @BeforeEach
@@ -50,7 +53,7 @@ class StockServiceTest {
     void stock_decrease_sync_when_multi_thread() throws InterruptedException {
         // given
         int threadCount = 100;
-        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
         // when
@@ -76,7 +79,7 @@ class StockServiceTest {
     void stock_decrease_pessimistic_lock_when_multi_thread() throws InterruptedException {
         // given
         int threadCount = 100;
-        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
         // when
@@ -84,6 +87,34 @@ class StockServiceTest {
             executorService.submit(()->{
                 try {
                     stockService.decrease_pessimisticLock(1L, 1L);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+
+        // then
+        Stock stock = stockRepository.findById(1L).orElseThrow();
+
+        assertThat(stock.getQuantity()).isEqualTo(0);
+    }
+
+    @Test
+    void stock_decrease_optimistic_lock_when_multi_thread() throws InterruptedException {
+        // given
+        int threadCount = 100;
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        // when
+        for (int i = 0; i < threadCount; i++) {
+            executorService.submit(()->{
+                try {
+                    stockServiceFacade.decrease_optimisticLock(1L, 1L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 } finally {
                     latch.countDown();
                 }

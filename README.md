@@ -49,8 +49,13 @@ Race Condition이 발생하게 됨
      - A 트랜잭션이 끝날때까지 기다렸다가 B 트랜잭션이 lock을 획득
    - 특정 row 를 update 하거나 delete 할 수 없습니다
    - 일반 select 는 별다른 lock이 없기 때문에 조회는 가능합니다.
+   - 단점으로 성능 저하가 있음
 2. Optimistic Lock
+   - version 컬럼을 활용하여 실제 lock을 이용하지 않고 데이터 정합성을 맞추는 방법
+   - version의 차이 발생 시 업데이트가 실패하게 되고 그걸 처리하는 로직 필요
+   - race condition 이 빈번히 발생할 것으로 예상되면 pessimistic 이 성능상 유리 할 수 있음
 3. Named Lock
 
 
 
+ 
