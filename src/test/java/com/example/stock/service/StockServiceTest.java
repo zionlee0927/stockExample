@@ -128,4 +128,30 @@ class StockServiceTest {
 
         assertThat(stock.getQuantity()).isEqualTo(0);
     }
+
+    @Test
+    void stock_decrease_named_lock_when_multi_thread() throws InterruptedException {
+        // given
+        int threadCount = 100;
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        // when
+        for (int i = 0; i < threadCount; i++) {
+            executorService.submit(()->{
+                try {
+                    stockServiceFacade.decrease_namedLock(1L, 1L);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+
+        // then
+        Stock stock = stockRepository.findById(1L).orElseThrow();
+
+        assertThat(stock.getQuantity()).isEqualTo(0);
+    }
 }

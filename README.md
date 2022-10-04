@@ -55,6 +55,10 @@ Race Condition이 발생하게 됨
    - version의 차이 발생 시 업데이트가 실패하게 되고 그걸 처리하는 로직 필요
    - race condition 이 빈번히 발생할 것으로 예상되면 pessimistic 이 성능상 유리 할 수 있음
 3. Named Lock
+   - 별도의 공간에 lock을 거는 형태
+   - 분산락을 구현할때 사용, 실무에서 사용시에는 데이터소스가 분리되어있어야함 (커넥션 풀이 부족해짐)
+   - 트랜잭션 종료 시 락 헤제, 세션관리 등을 주의하여야해서 복잡해질 수 있음
+   ![](src/main/resources/images/named-lock-1.png)
 
 
 
