@@ -70,6 +70,8 @@ Race Condition이 발생하게 됨
      - lock 을 획득하려는 스레드가 lock을 사용할 수 있는지 반복적으로 확인하는 방식
      - retry 로직을 작성해야함
      - ![](src/main/resources/images/redis-lettuce-1.png)
+     - 구현이 간단하지만 비교적 레디스 서버에 부하를 주게됨, -> 락 획득시 thread sleep을 통해 텀을 주는 방식으로 부하를 줄임
+   - named lock 과 유사하지만 세션관리를 하지 않아도 되는 이점이 있음
 2. Redisson
    - pub-sub 기반으로 Lock 구현 제공
      - 채널을 하나 만들고 락을 점유중인 스레드가 락 획득하려고 대기중인 스레드에게 해제를 알려주면 안내를 받은 스레드가 획득시도를 하는 방식

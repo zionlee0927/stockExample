@@ -1,6 +1,7 @@
 package com.example.stock.service;
 
 import com.example.stock.repository.LockRepository;
+import com.example.stock.repository.RedisLockRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,9 +11,12 @@ public class StockServiceFacade {
 
     private final LockRepository lockRepository;
 
-    public StockServiceFacade(StockService stockService, LockRepository lockRepository) {
+    private final RedisLockRepository redisLockRepository;
+
+    public StockServiceFacade(StockService stockService, LockRepository lockRepository, RedisLockRepository redisLockRepository) {
         this.stockService = stockService;
         this.lockRepository = lockRepository;
+        this.redisLockRepository = redisLockRepository;
     }
 
     public void decrease_optimisticLock(Long id, Long quantity) throws InterruptedException {
@@ -34,6 +38,18 @@ public class StockServiceFacade {
             stockService.decrease_namedLock(id, quantity);
         } finally {
             lockRepository.releaseLock(id.toString());
+        }
+    }
+
+    public void decrease_redis_lettuceLock(Long key, Long quantity) throws InterruptedException {
+        while (!redisLockRepository.lock(key)) {
+            Thread.sleep(100);
+        }
+
+        try {
+            stockService.decrease_sync(key, quantity);
+        } finally {
+            redisLockRepository.unlock(key);
         }
     }
 }
