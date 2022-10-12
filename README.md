@@ -58,8 +58,20 @@ Race Condition이 발생하게 됨
    - 별도의 공간에 lock을 거는 형태
    - 분산락을 구현할때 사용, 실무에서 사용시에는 데이터소스가 분리되어있어야함 (커넥션 풀이 부족해짐)
    - 트랜잭션 종료 시 락 헤제, 세션관리 등을 주의하여야해서 복잡해질 수 있음
-   ![](src/main/resources/images/named-lock-1.png)
+   - ![](src/main/resources/images/named-lock-1.png)
 
+#### 3. Redis (message broker) 를 활용한 분산 락
 
-
+1. Lettuce
+   - setnx 명령어를 활용하여 분산락 구현
+     - Set if Not exists
+     - key 와 value 를 Set 할 때 기존의 값이 없을 때만 Set 하는 명령어
+   - spin lock 방식
+     - lock 을 획득하려는 스레드가 lock을 사용할 수 있는지 반복적으로 확인하는 방식
+     - retry 로직을 작성해야함
+     - ![](src/main/resources/images/redis-lettuce-1.png)
+2. Redisson
+   - pub-sub 기반으로 Lock 구현 제공
+     - 채널을 하나 만들고 락을 점유중인 스레드가 락 획득하려고 대기중인 스레드에게 해제를 알려주면 안내를 받은 스레드가 획득시도를 하는 방식
+     - ![](src/main/resources/images/redis-redisson-1.png)
  
