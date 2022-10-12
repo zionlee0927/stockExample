@@ -2,8 +2,12 @@ package com.example.stock.service;
 
 import com.example.stock.repository.LockRepository;
 import com.example.stock.repository.RedisLockRepository;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class StockServiceFacade {
@@ -13,10 +17,13 @@ public class StockServiceFacade {
 
     private final RedisLockRepository redisLockRepository;
 
-    public StockServiceFacade(StockService stockService, LockRepository lockRepository, RedisLockRepository redisLockRepository) {
+    private final RedissonClient redissonClient;
+
+    public StockServiceFacade(StockService stockService, LockRepository lockRepository, RedisLockRepository redisLockRepository, RedissonClient redissonClient) {
         this.stockService = stockService;
         this.lockRepository = lockRepository;
         this.redisLockRepository = redisLockRepository;
+        this.redissonClient = redissonClient;
     }
 
     public void decrease_optimisticLock(Long id, Long quantity) throws InterruptedException {
@@ -50,6 +57,22 @@ public class StockServiceFacade {
             stockService.decrease_sync(key, quantity);
         } finally {
             redisLockRepository.unlock(key);
+        }
+    }
+
+    public void decrease_redis_redisson_pub_sub_lock(Long key, Long quantity) throws InterruptedException {
+        RLock lock = redissonClient.getLock(key.toString());
+
+        try {
+            boolean tryLock = lock.tryLock(15, 1, TimeUnit.SECONDS);
+
+            if (!tryLock) {
+                System.out.println("lock 획득 실패");
+            }
+
+            stockService.decrease_sync(key, quantity);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -75,5 +75,6 @@ Race Condition이 발생하게 됨
 2. Redisson
    - pub-sub 기반으로 Lock 구현 제공
      - 채널을 하나 만들고 락을 점유중인 스레드가 락 획득하려고 대기중인 스레드에게 해제를 알려주면 안내를 받은 스레드가 획득시도를 하는 방식
+     - lettuce에 비해 redis에 부하를 덜 수 있지만 별도의 라이브러리가 필요하고 구현이 조금은 복잡함
      - ![](src/main/resources/images/redis-redisson-1.png)
  
